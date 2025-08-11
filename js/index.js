@@ -18,7 +18,10 @@ function getGlobalPrompts() {
 
   // Note does not have comfyClass
   const notes = app.graph._nodes.filter((item) => 
-      item.type === "Note" && item.widgets[0] && item.mode === 0);
+    item.type === "Note" && 
+    item.widgets[0] && 
+    item.mode === 0 // disable bypass
+  );
 
   for (const n of notes) {
     const key = n.title;

@@ -35,3 +35,5 @@ NoteB: {red|green|blue}
 NoteB: white  
 NoteB: black  
 NoteC: No color  
+
+Bypass note node to disable.  
