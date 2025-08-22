@@ -6,7 +6,7 @@ import { app } from "../../scripts/app.js";
 const Settings = {
   debug: false,
   optimizePrompt: true,
-  overrideDynamicPrompt: true,
+  overrideWidgetValue: true,
 }
 
 function stripComments(str) {
@@ -51,7 +51,7 @@ function replaceGlobalPrompts(globalPrompts, prompt) {
 function replaceDynamicPrompts(prompt) {
   let offset = 0, 
       i = prompt.indexOf("{", offset);
-      
+
   while(i > -1) {
 
     offset = i + 1;
@@ -59,7 +59,6 @@ function replaceDynamicPrompts(prompt) {
     if (prompt.charAt(i - 1) !== "\\") {
 
       const closingIndex = prompt.indexOf("}", offset);
-
       if (closingIndex === -1) {
         throw new Error(`Unexpected token "{"`);
       }
@@ -68,19 +67,49 @@ function replaceDynamicPrompts(prompt) {
 
       if (nextOpeningIndex === -1 || closingIndex < nextOpeningIndex) {
         const items = prompt.substring(i + 1, closingIndex).split("|");
-        const item = items[Math.floor(Math.random() * items.length)];
-  
+
+        // original dynamic prompt algorithm
+        // const item = items[Math.floor(Math.random() * items.length)];
+
+        const convertedItems = items.map((item) => {
+          const match = item.match(/(?::(\d+(?:\.\d+)?)\s*)$/);
+          if (match) {
+            return {
+              value: item.substring(0, item.length - match[0].length),
+              weight: parseFloat(match[1]),
+            }
+          }
+
+          return {
+            value: item,
+            weight: 1,
+          }
+        });
+
+        const total = convertedItems.reduce((prev, curr) => prev + curr.weight, 0);
+
+        let r = Math.random() * total,
+            selectedItem;
+
+        for (const item of convertedItems) {
+          if (r < item.weight) {
+            selectedItem = item.value;
+            break;
+          }
+          r -= item.weight;
+        }
+        
+        const value = selectedItem?.value || "";
+
         prompt = prompt.substring(0, i) + 
-          item + 
+          value + 
           prompt.substring(closingIndex + 1);
           
         offset = 0; 
       }
-
     }
 
     i = prompt.indexOf("{", offset);
-
   }
 
   return prompt;
@@ -92,7 +121,7 @@ function replaceDynamicPrompts(prompt) {
 ;(() => {
   const origFunc = api.queuePrompt;
   api.queuePrompt = async function(...args) {
-    if (Settings["overrideDynamicPrompt"]) {
+    if (Settings["overrideWidgetValue"]) {
       const { output, workflow } = args[1];
       for (const node of app.graph.nodes) {
         if (!node.widgets) {
@@ -127,7 +156,7 @@ app.registerExtension({
   settings: [
     {
       id: 'shinich39.GlobalPrompt.Debug',
-      category: ['GlobalPrompt', 'Make Textarea Great Again', 'Debug'],
+      category: ['GlobalPrompt', 'NO MORE THINKING', 'Debug'],
       name: 'Debug',
       tooltip: 'Write prompts in the browser console for debug.',
       type: 'boolean',
@@ -138,7 +167,7 @@ app.registerExtension({
     },
     {
       id: 'shinich39.GlobalPrompt.OptimizePrompt',
-      category: ['GlobalPrompt', 'Make Textarea Great Again', 'OptimizePrompt'],
+      category: ['GlobalPrompt', 'NO MORE THINKING', 'OptimizePrompt'],
       name: 'Optimize Prompt',
       tooltip: 'Remove empty tokens and multiple whitespaces before generation.',
       type: 'boolean',
@@ -148,14 +177,14 @@ app.registerExtension({
       }
     },
     {
-      id: 'shinich39.GlobalPrompt.OverrideDynamicPrompt',
-      category: ['GlobalPrompt', 'Make Textarea Great Again', 'OverrideDynamicPrompt'],
-      name: 'Override Dynamic Prompt',
-      tooltip: 'Override selected token via DynamicPrompt to workflow in generated image.',
+      id: 'shinich39.GlobalPrompt.OverrideWidgetValue',
+      category: ['GlobalPrompt', 'NO MORE THINKING', 'OverrideWidgetValue'],
+      name: 'Override Widget Value',
+      tooltip: 'Override the selected value to workflow widget of generated image.',
       type: 'boolean',
-      defaultValue: Settings.overrideDynamicPrompt,
+      defaultValue: Settings.overrideWidgetValue,
       onChange: (value) => {
-        Settings["overrideDynamicPrompt"] = value;
+        Settings["overrideWidgetValue"] = value;
       }
     },
   ],
@@ -168,9 +197,11 @@ app.registerExtension({
 			);
 			for (const widget of widgets) {
 				// Override the serialization of the value to resolve dynamic prompts for all widgets supporting it in this node
-        const origSerializeValue = widget.serializeValue;
+        // const origSerializeValue = widget.serializeValue;
         widget.serializeValue = async function(workflowNode, widgetIndex) {
-          let r = await origSerializeValue?.apply(this, arguments) ?? widget.value;
+          // ignore original dynamicPrompts: ComfyUI_frontend/src/extensions/core/dynamicPrompts.ts
+          // let r = await origSerializeValue?.apply(this, arguments) ?? widget.value;
+          let r = widget.value;
 
           // Bugfix: this extension has been overwrite the original dynamicPrompt (Custom-Script presetText.js)
           r = stripComments(r);
@@ -180,7 +211,7 @@ app.registerExtension({
           r = replaceGlobalPrompts(gp, r);
 
           try {
-            r = replaceDynamicPrompts(`{${r}}`);
+            r = replaceDynamicPrompts(r);
           } catch(err) {
             console.error(`[comfyui-global-prompts][#${node.id}] ${err.message}\n${r}`);
           }

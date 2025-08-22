@@ -2,19 +2,6 @@
 
 Set global prompts using note node.
 
-## Nested dynamic prompt
-
-This extension override original dynamic prompt.
-
-e.g., 
-
-{a|b|{c|d}}
-
-a: 33%  
-b: 33%  
-c: 16%  
-d: 16%  
-
 ## Usage  
 
 1. Create Note node.
@@ -37,3 +24,25 @@ NoteB: black
 NoteC: No color  
 
 Bypass note node to disable.  
+
+### Nested dynamic prompt
+
+This extension override original dynamic prompt.
+
+e.g., 
+
+{a|b|{c|d}}
+
+a: 33%  
+b: 33%  
+c: 16%  
+d: 16%  
+
+### Weight
+
+default weight is 1
+
+{a:9|b}
+
+a: 90%  
+b: 10%  
