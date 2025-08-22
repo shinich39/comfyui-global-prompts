@@ -2,7 +2,7 @@
 @author: shinich39
 @title: comfyui-global-prompts
 @nickname: comfyui-global-prompts
-@version: 1.0.0
+@version: 1.0.1
 @description: Set global prompts using note node.
 """
 
