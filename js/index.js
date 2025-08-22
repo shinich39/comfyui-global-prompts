@@ -89,20 +89,22 @@ function replaceDynamicPrompts(prompt) {
         const total = convertedItems.reduce((prev, curr) => prev + curr.weight, 0);
 
         let r = Math.random() * total,
-            selectedItem;
+            v = "";
+
+        // console.log("options", items, convertedItems, total, r);
 
         for (const item of convertedItems) {
           if (r < item.weight) {
-            selectedItem = item.value;
+            v = item.value;
             break;
           }
           r -= item.weight;
         }
-        
-        const value = selectedItem?.value || "";
+
+        // console.log("selected", v);
 
         prompt = prompt.substring(0, i) + 
-          value + 
+          v + 
           prompt.substring(closingIndex + 1);
           
         offset = 0; 
