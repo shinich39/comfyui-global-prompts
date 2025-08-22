@@ -42,7 +42,20 @@ d: 16%
 
 default weight is 1
 
+e.g., 
+
 {a:9|b}
 
 a: 90%  
 b: 10%  
+
+### Nested weight
+
+e.g., 
+
+{{a|b:2|c}:0.5|:0.5}
+
+a: 12.5%  
+b: 25%  
+c: 12.5%  
+"": 50%  
