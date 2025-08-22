@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-global-prompts"
 description = "Set global prompts using note node."
-version = "1.0.2"
+version = "1.0.0"
 license = { file = "LICENSE" }
 
 [project.urls]
