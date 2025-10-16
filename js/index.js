@@ -9,6 +9,15 @@ const Settings = {
   overrideWidgetValue: true,
 }
 
+function showError(message = "", life = 5000) {
+  app?.extensionManager?.toast?.add({
+    severity: "error",
+    summary: "Error",
+    detail: message,
+    life,
+  });
+}
+
 function stripComments(str) {
   return str.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
 }
@@ -216,6 +225,7 @@ app.registerExtension({
             r = replaceDynamicPrompts(r);
           } catch(err) {
             console.error(`[comfyui-global-prompts][#${node.id}] ${err.message}\n${r}`);
+            showError(`#${node.id}: ${err.message}`);
           }
 
           // Remove unused blanks, commas
