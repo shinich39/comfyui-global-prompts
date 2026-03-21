@@ -4,7 +4,7 @@
   "description": "Set global prompts using note node.",
   "type": "module",
   "scripts": {
-    "commit": "node scripts/commit.js"
+    "deploy": "node scripts/deploy.js"
   },
   "repository": {
     "type": "git",
